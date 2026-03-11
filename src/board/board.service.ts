@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.do';
 
 
 interface Board{
@@ -13,7 +14,7 @@ interface Board{
 @Injectable()
 export class BoardService {
 
-     private Board:Board[] = [{
+     private board:Board[] = [{
         id: 1,
         title: '첫번째 게시글 - 제목',
         content: '첫번째 게시글 - 본문',
@@ -34,14 +35,18 @@ export class BoardService {
     },
     ]
 
+    private generateId(): number{
+        return Math.random()
+    }
+
 
     findAll():Board[] {
-        return this.Board
+        return this.board
     }
 
     findOne(id: number):Board{
         
-        const findBoard = this.Board.find((board) => board.id === id)
+        const findBoard = this.board.find((board) => board.id === id)
 
         if(!findBoard){
             throw new NotFoundException(`${id}를 찾을 수 없습니다.`)
@@ -50,7 +55,32 @@ export class BoardService {
         return findBoard
     }
 
-    create(title: string, content: string){
-        
+    create(payload:CreatePostDto){
+        const newBoard = {
+            id: this.generateId(),
+            ...payload,
+        };
+        this.board.push(newBoard);
+
+        return newBoard
     }
+
+    update(id: number, payload: UpdatePostDto): Board {
+        const index = this.board.findIndex((board) => board.id === id);
+
+        if (index === -1) {
+            throw new NotFoundException(`${id}를 찾을 수 없습니다.`);
+        }
+
+        const updatedBoard = {
+            ...this.board[index],
+            ...payload,
+        };
+
+        this.board[index] = updatedBoard;
+
+        return updatedBoard;
+    }
+
+
 }
